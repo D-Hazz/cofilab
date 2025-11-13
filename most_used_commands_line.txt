@@ -1,0 +1,47 @@
+Lancement de tous les serveurs 
+rendre le fichier executer
+chmod +x setup_dev.sh
+Lance-le :
+./setup_dev.sh
+
+lancer celery
+celery -A cofilab worker -l info
+
+
+Mise en place de la DB postgres
+
+sudo -u postgres psql 
+
+ensuite
+-- 1️⃣ Créer l'utilisateur avec un mot de passe
+CREATE USER cofilab_user WITH PASSWORD 'password';
+
+-- 2️⃣ Créer la base de données
+CREATE DATABASE cofilab_db OWNER cofilab_user;
+
+-- 3️⃣ Donner les droits complets
+GRANT ALL PRIVILEGES ON DATABASE cofilab_db TO cofilab_user;
+
+
+
+Si tu veux vérifier que tout est bon avant de relancer :
+psql -U cofilab_user -d cofilab_db -h localhost
+
+
+Tourner le tunnel local pour https
+lt --port 9000
+
+lancer daphne
+python -m daphne -b 0.0.0.0 -p 8000 cofilab.asgi:application
+
+localhost server launching
+python manage.py runserver 0.0.0.0:9000
+
+localhost server npm
+npm run dev
+
+remove nextjs cache
+ rm -rf .next
+
+ install local tunnel for https urls
+ npm install -g localtunnel
