@@ -3,15 +3,15 @@
 Collaborate. Fund. Earn.
 Bitcoin Lightning for collaborative work and financing.
 
-## 1. Présentation
+## 1. Overview
 
-CoFiLab est une plateforme de collaboration et de financement décentralisé. Elle connecte les créateurs, développeurs et financeurs autour d’un modèle simple : chaque tâche accomplie est validée, mesurée, tracée et rémunérée automatiquement en Bitcoin via Breez SDK.
+CoFiLab is a decentralized collaboration and financing platform. It connects creators, developers, and funders through a simple mechanism: every completed task is validated, measured, tracked, and paid automatically in Bitcoin through the Breez SDK.
 
-CoFiLab réunit trois piliers :
+CoFiLab is built on three pillars:
 
-1. Collaboration entre talents
-2. Financement ouvert, anonyme ou public
-3. Rémunération instantanée sur Lightning Network
+1. Talent-driven collaboration
+2. Open, anonymous or public financing
+3. Instant Lightning Network payments
 
 CoFiLab = co-freelancing + co-financing.
 
@@ -19,103 +19,103 @@ CoFiLab = co-freelancing + co-financing.
 
 ## 2. Vision
 
-Créer un espace où projets et talents se rencontrent sans frontières ni intermédiaires.
-Chaque contribution est vérifiable, chaque financement est traçable, chaque paiement est instantané.
+Build a space where projects and talent meet without borders or intermediaries.
+Every contribution is verifiable, every funding action is traceable, and every payment is instant.
 
 ---
 
-## 3. Objectifs
+## 3. Goals
 
-* Simplifier la collaboration autour de projets structurés par tâches pondérées.
-* Supprimer les barrières traditionnelles au financement grâce à Lightning.
-* Automatiser la rémunération selon validation et pondération.
-* Garantir la transparence via des preuves horodatées et des historiques vérifiables.
-* Offrir une réputation décentralisée basée sur la valeur réellement apportée.
-
----
-
-## 4. Fonctionnalités principales
-
-### Côté Financeur
-
-* Financement public ou anonyme.
-* Montants visibles ou privés.
-* Preuve de financement par hash SHA-256.
-* Regroupement des financeurs par projet ou thématique.
-* Pools de financement collaboratif.
-* Portefeuille Lightning intégré via Breez SDK.
-* Suivi en temps réel des fonds.
-
-### Côté Exécutant
-
-* Rejoint un projet ou une agence.
-* Accède aux tâches pondérées (points, complexité, impact).
-* Soumet des livrables validés manuellement ou automatiquement.
-* Paiement Lightning immédiat après validation.
-* Historique public de participation.
-
-### Côté Manager / Agence
-
-* Création et gestion de projets et milestones.
-* Définition des pondérations et critères de validation.
-* Supervision multi-exécutants.
-* Paiements automatiques pilotés par Breez SDK.
-* Dashboard de performance (capacité, progression, retards).
+* Streamline collaboration using structured, weighted tasks.
+* Remove traditional funding barriers through Lightning payments.
+* Automate payouts based on validation and weighting.
+* Ensure full transparency with timestamped proofs and verifiable histories.
+* Provide decentralized reputation based on real value delivered.
 
 ---
 
-## 5. Exemple d’usage
+## 4. Key Features
 
-Projet : Smart Green Dashboard
-Budget total : 300 000 sats
+### For Funders
 
-Managers définissent la pondération :
+* Public or anonymous funding
+* Visible or private amounts
+* Funding proofs using SHA-256 hash
+* Funder grouping by project or category
+* Collaborative funding pools
+* Integrated Lightning wallet via Breez SDK
+* Real-time balance tracking
 
-* Frontend : 40 %
-* Backend : 40 %
-* UI/UX : 20 %
+### For Contributors
 
-Les validations déclenchent les paiements selon ces pourcentages.
+* Join projects or agencies
+* Access weighted tasks (points, complexity, impact)
+* Submit deliverables with manual or automated validation
+* Instant Lightning payouts after validation
+* Public contribution history
 
----
+### For Managers / Agencies
 
-## 6. Authentification
-
-* Financeur : authentification via wallet Lightning (LNURL-auth).
-* Exécutant : email classique ou wallet connect.
-* Manager : authentification agence multi-projet.
-
----
-
-## 7. Intégration Breez SDK
-
-* Paiements Lightning instantanés
-* Génération et vérification de factures LN
-* Distribution automatique multi-wallet
-* Solde et historique à l’intérieur de l’application
-* Aucun stockage de clés privées côté serveur
+* Create and manage projects and milestones
+* Define weighting rules and validation criteria
+* Oversee multiple contributors
+* Automatic payouts via Breez SDK
+* Performance dashboard (capacity, progress, delays)
 
 ---
 
-## 8. Stack Technique (MVP)
+## 5. Usage Example
 
-| Élément         | Technologie                        |
-| --------------- | ---------------------------------- |
-| Frontend        | Next.js 14, TailwindCSS, Shadcn UI |
-| Backend         | Django + Django REST Framework     |
-| Base de données | PostgreSQL                         |
-| Paiements       | Breez SDK                          |
-| Temps réel      | Django Channels (WebSockets)       |
-| Queue           | Celery + Redis                     |
-| Auth            | JWT + LNURL-signature              |
-| Serveur         | Daphne + Nginx                     |
-| Déploiement     | Docker ou VM simple                |
+Project: Smart Green Dashboard
+Total Budget: 300,000 sats
+
+Managers define the weighting:
+
+* Frontend: 40%
+* Backend: 40%
+* UI/UX: 20%
+
+Task validations trigger payments according to these percentages.
+
+---
+
+## 6. Authentication
+
+* Funder: LNURL-auth via Lightning wallet
+* Contributor: Traditional email or wallet connect
+* Manager: Multi-project agency authentication
+
+---
+
+## 7. Breez SDK Integration
+
+* Instant Lightning payments
+* Invoice generation and verification
+* Automated multi-wallet distribution
+* In-app balance and payment history
+* No private key storage on the server
+
+---
+
+## 8. Technical Stack (MVP)
+
+| Component  | Technology                         |
+| ---------- | ---------------------------------- |
+| Frontend   | Next.js 14, TailwindCSS, Shadcn UI |
+| Backend    | Django + Django REST Framework     |
+| Database   | PostgreSQL                         |
+| Payments   | Breez SDK                          |
+| Real-time  | Django Channels (WebSockets)       |
+| Queue      | Celery + Redis                     |
+| Auth       | JWT + LNURL-signature              |
+| Server     | Daphne + Nginx                     |
+| Deployment | Docker or simple VM                |
 
 ---
 
 ## 9. Installation
 
-### 9.1. Backend (Django)
+### 9.1 Backend (Django)
 
 ```
 git clone https://github.com/your-org/cofilab-backend.git
@@ -125,7 +125,7 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Configurer `.env` :
+Configure `.env`:
 
 ```
 SECRET_KEY=
@@ -134,13 +134,13 @@ REDIS_URL=redis://localhost:6379/0
 BREEZ_API_KEY=
 ```
 
-Migrer la base :
+Run migrations:
 
 ```
 python manage.py migrate
 ```
 
-Lancer le backend :
+Launch the backend:
 
 ```
 daphne -b 0.0.0.0 -p 8000 cofilab.asgi:application
@@ -148,7 +148,7 @@ daphne -b 0.0.0.0 -p 8000 cofilab.asgi:application
 
 ---
 
-### 9.2. Frontend (Next.js)
+### 9.2 Frontend (Next.js)
 
 ```
 git clone https://github.com/your-org/cofilab-frontend.git
@@ -156,13 +156,13 @@ cd cofilab-frontend
 npm install
 ```
 
-Créer `.env.local` :
+Create `.env.local`:
 
 ```
 NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
-Lancer le frontend :
+Start the frontend:
 
 ```
 npm run dev
@@ -170,7 +170,7 @@ npm run dev
 
 ---
 
-### 9.3. Redis & Celery
+### 9.3 Redis & Celery
 
 ```
 sudo apt install redis-server
@@ -180,9 +180,9 @@ celery -A cofilab beat --loglevel=INFO
 
 ---
 
-## 10. Modèle de données simplifié
+## 10. Simplified Data Model
 
-### Projet
+### Project
 
 * name
 * description
@@ -190,7 +190,7 @@ celery -A cofilab beat --loglevel=INFO
 * total_budget
 * funded_sats
 
-### Tâche
+### Task
 
 * title
 * description
@@ -204,81 +204,81 @@ celery -A cofilab beat --loglevel=INFO
 * user
 * task
 * points
-* pourcentage
+* percentage
 * timestamp
 
-### Paiement
+### Payment
 
-* facture LN
-* montant
-* statut
-* horodatage
-
----
-
-## 11. Nouveaux Modules Fonctionnels
-
-### 1. Gestion de la capacité
-
-Indicateurs de performance par contributeur et répartition dynamique.
-
-### 2. Pondération des tâches
-
-Points convertis en pourcentage de rémunération.
-
-### 3. Répartition financière
-
-Calcul automatique des parts selon performance.
-
-### 4. Validation formelle
-
-Étapes obligatoires avant paiement.
-Possibilité de modifier les pondérations.
-
-### 5. Suivi hebdomadaire
-
-Rapports, progression, blocages, retards.
+* LN invoice
+* amount
+* status
+* timestamp
 
 ---
 
-## 12. Sécurité
+## 11. New Functional Modules
 
-* Breez SDK prend en charge la gestion des fonds.
-* Aucune clé privée côté serveur.
-* Hash SHA-256 comme preuve de financement.
-* Auth LNURL-signature pour financeurs.
-* Requêtes sécurisées via JWT.
+### 1. Capacity Management
+
+Contributor performance indicators and dynamic allocation.
+
+### 2. Task Weighting
+
+Points converted into payment percentages.
+
+### 3. Financial Distribution
+
+Automatic share calculation based on performance.
+
+### 4. Formal Validation
+
+Mandatory steps before payment.
+Editable weighting rules.
+
+### 5. Weekly Tracking
+
+Reports, progress monitoring, blockers, delays.
+
+---
+
+## 12. Security
+
+* Breez SDK manages funds client-side
+* No private keys stored on the server
+* SHA-256 hashes as proof of funding
+* LNURL-signature authentication for funders
+* JWT-secured API interactions
 
 ---
 
 ## 13. Roadmap
 
-### Phase 1 – MVP Web
+### Phase 1 – Web MVP
 
-Auth, création projet, financement, validation manuelle, paiement Breez.
+Auth, project creation, funding, manual validation, Breez payments.
 
-### Phase 2 – Agences & Pondération
+### Phase 2 – Agencies & Weighting
 
-Gestion multi-manager, calcul automatique des contributions.
+Multi-manager system, automated contribution calculations.
 
-### Phase 3 – IA & Réputation
+### Phase 3 – AI & Reputation
 
-Matching intelligent, score de confiance, analyse pondérée.
-
----
-
-## 14. Identité et Branding
-
-* Nom : CoFiLab
-* Couleurs : Or Bitcoin et Bleu Tech
-* Symbole : deux cercles entrelacés (travail et financement)
-* Motto : Your skill is value. Your wallet is trust.
+Intelligent matching, trust score, weighted analysis.
 
 ---
 
-## 15. Extensions Futures
+## 14. Identity & Branding
 
-* Module agence avec reporting global
-* IA de réputation
-* Marketplace open-source de projets financés
-* DAO communautaire pour gouvernance décentralisée
+* Name: CoFiLab
+* Colors: Bitcoin Gold and Tech Blue
+* Symbol: two interlocking circles (work and financing)
+* Motto: Your skill is value. Your wallet is trust.
+
+---
+
+## 15. Future Extensions
+
+* Agency module with global reporting
+* AI-based reputation engine
+* Open-source marketplace for financed projects
+* Community DAO for decentralized governance
