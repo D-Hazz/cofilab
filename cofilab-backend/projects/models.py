@@ -1,3 +1,4 @@
+# projects/models.py
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.db.models.signals import post_save
@@ -101,6 +102,7 @@ class Project(models.Model):
     description = models.TextField(blank=True)
     manager = models.ForeignKey(User, on_delete=models.CASCADE, related_name="managed_projects")
     total_budget = models.BigIntegerField(default=0)  # in sats
+    current_balance = models.BigIntegerField(default=0)
     is_public = models.BooleanField(default=True)
     # ✅ NOUVEAU: Ajout de l'image de projet
     project_image = models.ImageField(
@@ -129,7 +131,13 @@ class Task(models.Model):
 
     def __str__(self):
         return f"{self.project.name} - {self.title}"
-
+    
+    # ⭐ Méthode officielle
+    def calculate_reward(self):
+        total_weights = Task.objects.filter(project=self.project).aggregate(models.Sum("weight"))["weight__sum"] or 1
+        return int((self.project.total_budget * float(self.weight)) / float(total_weights))
+    
+# Contribution model
 class Contribution(models.Model):  
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="contributions")
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="contributions")
@@ -138,3 +146,58 @@ class Contribution(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.project.name} - {self.amount_sats} sats"
+    
+    class Meta:
+        verbose_name = "Contribution"
+        verbose_name_plural = "Contributions"
+
+
+# Invitation model
+class Invitation(models.Model):
+    STATUS_PENDING = 'pending'
+    STATUS_ACCEPTED = 'accepted'
+    STATUS_REJECTED = 'rejected'
+
+    STATUS_CHOICES = (
+        (STATUS_PENDING, 'Pending'),
+        (STATUS_ACCEPTED, 'Accepted'),
+        (STATUS_REJECTED, 'Rejected'),
+    )
+
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='invitations')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_invitations')
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_invitations')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('project', 'recipient')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Invite {self.recipient} -> {self.project} ({self.status})"
+
+
+# Simple notification model
+class Notification(models.Model):
+    TYPE_INVITATION = 'invitation'
+    TYPE_INFO = 'info'
+
+    TYPE_CHOICES = (
+        (TYPE_INVITATION, 'Invitation'),
+        (TYPE_INFO, 'Info'),
+    )
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    title = models.CharField(max_length=200)
+    message = models.TextField(blank=True)
+    type = models.CharField(max_length=50, choices=TYPE_CHOICES, default=TYPE_INFO)
+    read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Notification to {self.user.username}: {self.title}"

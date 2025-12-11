@@ -1,8 +1,9 @@
+// cofilab-frontend/hooks/api.ts
 'use client'
 
 import axios from 'axios'
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:9000/api'
 
 // --- JWT Token Storage ---
 const getAccessToken = () => typeof window !== 'undefined' ? localStorage.getItem('access') : null
@@ -63,6 +64,7 @@ export interface Task {
   reward_sats: number
   rewarded: boolean
   project: number | Project
+  assigned_to_username?: string | null
   created_at: string
 }
 
@@ -134,6 +136,28 @@ export const paymentApi = {
   create: async (payload: Partial<Payment>) => (await api.post('/payments/', payload)).data,
   update: async (id: number, payload: Partial<Payment>) => (await api.patch(`/payments/${id}/`, payload)).data,
   delete: async (id: number) => (await api.delete(`/payments/${id}/`)).data,
+}
+
+export const projects = {
+  // Récupérer 1 projet
+  retrieve: async (id: string | number) =>
+    (await api.get(`/projects/${id}/`)).data,
+
+  // Récupérer toutes les tâches d’un projet
+  tasks: async (id: string | number) =>
+    (await api.get(`/projects/${id}/tasks/`)).data,
+
+  // Créer une tâche dans un projet
+  createTask: async (projectId: string | number, payload: any) =>
+    (await api.post(`/projects/${projectId}/tasks/`, payload)).data,
+
+  // Mettre à jour une tâche
+  updateTask: async (taskId: string | number, payload: any) =>
+    (await api.patch(`/tasks/${taskId}/`, payload)).data,
+
+  // Supprimer une tâche
+  deleteTask: async (taskId: string | number) =>
+    (await api.delete(`/tasks/${taskId}/`)).data,
 }
 
 export default api

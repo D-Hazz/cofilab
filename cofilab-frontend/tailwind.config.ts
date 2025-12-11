@@ -1,4 +1,4 @@
-import { type Config } from "tailwindcss"
+import type { Config } from "tailwindcss";
 
 const config: Config = {
   darkMode: ["class"],
@@ -10,11 +10,21 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        bitcoin: "#F7931A",
-        techblue: "#1E293B",
+        // Déclaration explicite des couleurs ici
+        bitcoin: "#F7931A", 
+        techblue: "#1E293B", 
+      },
+      keyframes: {
+        "fade-in-up": {
+          "0%": { opacity: "0", transform: "translateY(10px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+      },
+      animation: {
+        "fade-in-up": "fade-in-up 0.5s ease-out forwards",
       },
     },
   },
   plugins: [],
-}
-export default config
+};
+export default config;

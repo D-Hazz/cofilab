@@ -54,13 +54,13 @@ export default function ProjectCard({ project }: ProjectCardProps) {
   const imageUrl = getProjectImageUrl(project.project_image)
 
   return (
-    <Card className="flex flex-col overflow-hidden transition-all duration-300 hover:shadow-xl">
+    <Card className="flex flex-col overflow-hidden transition-all duration-300 hover:shadow-xl pt-0 w-full max-w-sm">
       {/* Image de Couverture */}
       <div className="h-48 w-full relative">
         <img
           src={imageUrl}
           alt={`Couverture du projet ${project.name}`}
-          className="h-full w-full object-cover"
+          className="h-full w-full object-cover rounded-b-xl"
           onError={(e) => {
             // Si l'image backend est K.O, on revient à l'image par défaut locale
             e.currentTarget.onerror = null

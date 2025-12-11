@@ -136,7 +136,7 @@ export default function CreateProjectModal({ onProjectCreated }: CreateProjectMo
         <DialogHeader>
           <DialogTitle className="text-lg sm:text-xl font-semibold">Créer un nouveau projet</DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
-            Remplissez les informations ci-dessous pour lancer votre nouveau projet CoFiLab.
+            Remplissez les informations ci-dessous pour lancer votre nouveau projet et le gérer avec CoFiLab.
           </DialogDescription>
         </DialogHeader>
 

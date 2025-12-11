@@ -1,11 +1,58 @@
 # cofilab-backend/projects/serializers.py (Corrigé)
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Project, Task, Contribution, Profile, Skill
+from .models import Notification, Project, Task, Contribution, Profile, Skill, Invitation
+from rest_framework.validators import UniqueValidator
+from django.contrib.auth.password_validation import validate_password
 
 User = get_user_model()
 
-# --- Nouveaux Serializers ---
+# --- Nouveaux Serializers ---\
+
+class BaseUserSerializer(serializers.ModelSerializer):
+    """ Serializer de base pour l'utilisateur, utilisé pour l'imbrication et comme base pour RegisterSerializer. """
+    class Meta:
+        model = User
+        # On expose le mot de passe seulement pour la création de l'objet User, pas la lecture
+        fields = ('id', 'username', 'email', 'password') 
+        extra_kwargs = {'password': {'write_only': True}}
+
+    def create(self, validated_data):
+        # Utilise la méthode native de Django pour créer l'utilisateur (gère le hachage du mot de passe)
+        user = User.objects.create_user(**validated_data)
+        return user
+# --- NOUVEAU: Serializer d'Inscription Professionnelle ---
+
+class RegisterSerializer(serializers.ModelSerializer):
+    """ Gère la création du compte avec validation des mots de passe. """
+    email = serializers.EmailField(
+        required=True,
+        validators=[UniqueValidator(queryset=User.objects.all())]
+    )
+    password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
+    password2 = serializers.CharField(write_only=True, required=True)
+
+    class Meta:
+        model = User
+        # Champs requis pour l'inscription
+        fields = ('username', 'email', 'password', 'password2')
+
+    def validate(self, data):
+        """ Vérifie que les deux mots de passe correspondent. """
+        if data['password'] != data['password2']:
+            raise serializers.ValidationError({"password": "Les deux mots de passe ne correspondent pas."})
+        return data
+
+    def create(self, validated_data):
+        """ Crée l'utilisateur en utilisant la méthode create_user de Django. """
+        # On retire 'password2' des données validées pour ne pas le passer à create_user
+        validated_data.pop('password2')
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            email=validated_data['email'],
+            password=validated_data['password']
+        )
+        return user
 
 class SkillSerializer(serializers.ModelSerializer):
     class Meta:
@@ -54,10 +101,22 @@ class ProfileSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ('username', 'skills', 'work_mode_display', 'availability_display')
 
+class UserLiteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username']
 
 class TaskSerializer(serializers.ModelSerializer):
     project_name = serializers.ReadOnlyField(source="project.name") 
     assigned_to_username = serializers.ReadOnlyField(source="assigned_to.username")
+    assigned_to = UserLiteSerializer(read_only=True)
+    assigned_to_id = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(), 
+        source='assigned_to',
+        write_only=True,
+        allow_null=True,
+        required=False
+    )
 
     class Meta:
         model = Task
@@ -71,6 +130,7 @@ class TaskSerializer(serializers.ModelSerializer):
             "project",
             "project_name", 
             "assigned_to",
+            "assigned_to_id",
             "assigned_to_username",
             "created_at",
             "weight", 
@@ -108,3 +168,45 @@ class ProjectSerializer(serializers.ModelSerializer):
         if obj.project_image and request:
             return request.build_absolute_uri(obj.project_image.url)
         return None
+    
+# --- Serializer pour le modèle Contribution ---
+class ContributionSerializer(serializers.ModelSerializer):
+    user_username = serializers.ReadOnlyField(source="user.username") 
+    project_name = serializers.ReadOnlyField(source="project.name") 
+
+    class Meta:
+        model = Contribution
+        fields = [
+            "id",
+            "user",
+            "user_username",
+            "project",
+            "project_name",
+            "amount_sats",
+            "contributed_at",
+        ]
+        extra_kwargs = {
+            "user": {"write_only": True},
+            "project": {"write_only": True},
+        }
+
+# --- NOUVEAU: Serializer pour le modèle Invitation ---
+class InvitationSerializer(serializers.ModelSerializer):
+    sender = UserLiteSerializer(read_only=True)
+    recipient = UserLiteSerializer(read_only=True)
+    recipient_id = serializers.PrimaryKeyRelatedField(write_only=True, queryset=User.objects.all(), source='recipient')
+    project_id = serializers.PrimaryKeyRelatedField(write_only=True, queryset=Project.objects.all(), source='project')
+
+    class Meta:
+        model = Invitation
+        fields = [
+            'id', 'project', 'project_id', 'sender', 'recipient', 'recipient_id',
+            'status', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ('project', 'sender', 'status', 'created_at', 'updated_at')
+
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = ['id','user','title','message','type','read','created_at']
+        read_only_fields = ('user','created_at')

@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "corsheaders",
     "channels",
-    "projects",
+    "projects.apps.ProjectsConfig",
     "payments",
     "lnurl_auth",
     "api",

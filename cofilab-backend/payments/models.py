@@ -1,5 +1,3 @@
-from django.db import models
-
 # Create your models here.
 # payments/models.py
 from django.db import models
@@ -26,11 +24,14 @@ class Funding(models.Model):
     is_amount_public = models.BooleanField(default=True)
     proof_hash = models.CharField(max_length=128)
     created_at = models.DateTimeField(auto_now_add=True)
+    tx_id = models.CharField(max_length=255, blank=True, null=True)
+
+
 
 class Payment(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="payments")
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    ln_invoice = models.CharField(max_length=255)
+    ln_invoice = models.CharField(max_length=255, unique=True)
     amount_sats = models.PositiveBigIntegerField(default=0) # Add this line
     status = models.CharField(max_length=30, choices=[("pending", "En attente"), ("paid", "Payé")], default="pending")
     paid_at = models.DateTimeField(null=True, blank=True)

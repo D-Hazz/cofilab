@@ -2,55 +2,122 @@
 
 import axios, { AxiosRequestConfig } from 'axios'
 
+// --- Config ---
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:9000/api'
 
 const api = axios.create({
   baseURL: API_BASE,
-  // Ne PAS définir Content-Type globalement — laisser axios / le navigateur le gérer pour FormData
   timeout: 20000,
 })
 
+// --- Interceptors ---
 api.interceptors.request.use((config: AxiosRequestConfig) => {
-  // Récupération du token uniquement côté client
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`
   }
 
-  // Si la payload est un FormData, supprimer explicitement Content-Type
   const isFormData =
     typeof FormData !== 'undefined' && config.data instanceof FormData
+
   if (isFormData && config.headers) {
-    // supprimer les variantes possibles de l'en-tête
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     delete (config.headers as any)['Content-Type']
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     delete (config.headers as any)['content-type']
   }
 
   return config
 })
 
-// Optionnel : interceptor de réponse pour normaliser erreurs
 api.interceptors.response.use(
   (res) => res,
   (err) => {
-    // Propager un objet d'erreur plus lisible côté client
     const payload = err?.response?.data || { detail: err.message || 'Network error' }
     return Promise.reject(payload)
   }
 )
 
-interface ChallengeResponse {
-  k1: string
+// ======================
+// TYPES
+// ======================
+
+interface Notification {
+  id: number
+  title: string
+  message: string
+  read: boolean
+  created_at: string
 }
 
-// --- Auth LNURL ---
-export const lnurl = {
-  async getChallenge(): Promise<ChallengeResponse> {
+interface UserRegistration {
+  username?: string
+  email?: string
+  password?: string
+  password2?: string
+}
+
+interface Skill {
+  id: number
+  name: string
+}
+
+interface Task {
+  id: number
+  title: string
+}
+
+interface Project {
+  id: number
+  name: string
+  tasks: Task[]
+}
+
+interface UserProfile {
+  id: number
+  username: string
+  contact_email: string
+  contact_phone: string
+  current_city: string
+  work_mode: string
+  availability: string
+  bio: string
+  profile_picture?: string
+  skill_ids?: number[]
+  skills: Skill[]
+  created_at: string
+  updated_at: string
+}
+
+// ======================
+// NOTIFICATIONS (fixé)
+// ======================
+
+export const notificationsApi = {
+  async list(): Promise<Notification[]> {
+    const res = await api.get('/notifications/')
+    return res.data
+  },
+
+  async markRead(notificationId: number) {
+    const res = await api.patch(`/notifications/${notificationId}/`, { read: true })
+    return res.data
+  },
+}
+
+// ======================
+// AUTH
+// ======================
+export const auth = {
+  async register(data: UserRegistration): Promise<UserProfile> {
+    const res = await api.post('/register/', data)
+    return res.data
+  },
+
+  async getChallenge() {
     const res = await api.get('/lnurl/challenge/')
     return res.data
   },
+
   async verify(k1: string, sig: string, key: string) {
     const res = await api.post('/lnurl/verify/', { k1, sig, key })
     if (res.data?.access) {
@@ -60,70 +127,129 @@ export const lnurl = {
   },
 }
 
-// --- CRUD: Projects ---
+// ======================
+// PROJECTS
+// ======================
 export const projects = {
-  async list() {
+  async list(): Promise<Project[]> {
     const res = await api.get('/projects/')
     return res.data
   },
 
-  async retrieve(id: string | number) {
+  async retrieve(id: number | string): Promise<Project> {
     const res = await api.get(`/projects/${id}/`)
     return res.data
   },
 
-  // Accepts FormData or plain object — if FormData is used, interceptor supprime Content-Type automatiquement
   async create(data: FormData | Record<string, unknown>) {
-    const res = await api.post('/projects/', data as unknown as FormData)
+    const res = await api.post('/projects/', data)
     return res.data
   },
 
-  async tasks(id: string | number) {
+  async inviteContributor(projectId: number, userId: number) {
+    const res = await api.post(`/projects/${projectId}/invite/`, {
+      user_id: userId,
+    })
+    return res.data
+  },
+
+  async tasks(id: number | string): Promise<Task[]> {
     const res = await api.get(`/projects/${id}/tasks/`)
     return res.data
   },
+
+  async createTask(projectId: number | string, data: any): Promise<Task> {
+    const payload = {
+      ...data,
+      project: projectId,
+      assigned_to: data.assigned_to || null,
+    }
+    const res = await api.post('/tasks/', payload)
+    return res.data
+  },
+
+  async updateTask(taskId: number, data: any): Promise<Task> {
+    const payload = {
+      ...data,
+      assigned_to: data.assigned_to || null,
+    }
+    const res = await api.patch(`/tasks/${taskId}/`, payload)
+    return res.data
+  },
+
+  async deleteTask(taskId: number) {
+    const res = await api.delete(`/tasks/${taskId}/`)
+    return res.data
+  },
 }
 
-// --- Tasks ---
-export const tasks = {
-  async list() {
-    const res = await api.get('/tasks/')
-    return res.data
-  },
+// ======================
+// PROFILES
+// ======================
 
-  async create(data: Record<string, unknown>) {
-    const res = await api.post('/tasks/', data)
-    return res.data
-  },
-
-  async update(id: number, data: Record<string, unknown>) {
-    const res = await api.patch(`/tasks/${id}/`, data)
-    return res.data
-  },
-}
-
-// --- Profiles ---
 export const profiles = {
+  async list() {
+    const res = await api.get('/profiles/')
+    return res.data
+  },
+
   async getMe() {
     const res = await api.get('/profiles/me/')
     return res.data
   },
 
-  async retrieve(id: string | number) {
+  async retrieve(id: number | string) {
     const res = await api.get(`/profiles/${id}/`)
     return res.data
   },
 
-  async update(id: string | number, data: Record<string, unknown>) {
+  async update(id: number | string, data: any) {
     const res = await api.patch(`/profiles/${id}/`, data)
     return res.data
   },
 }
 
-// --- Skills ---
+// ======================
+// SKILLS
+// ======================
+
 export const skills = {
-  async list() {
+  async list(): Promise<Skill[]> {
     const res = await api.get('/skills/')
+    return res.data
+  },
+}
+
+// ======================
+// INVITATIONS
+// ======================
+
+export const invitations = {
+  async invite(projectId: number, userId: number) {
+    const res = await api.post('/invitations/', {
+      project_id: projectId,
+      recipient_id: userId,
+    })
+    return res.data
+  },
+
+  async listSent() {
+    const res = await api.get('/invitations/?filter=sent')
+    return res.data
+  },
+
+  async listReceived() {
+    const res = await api.get('/invitations/?filter=received')
+    return res.data
+  },
+
+  async accept(id: number) {
+    const res = await api.post(`/invitations/${id}/accept/`)
+    return res.data
+  },
+
+  async reject(id: number) {
+    const res = await api.post(`/invitations/${id}/reject/`)
     return res.data
   },
 }
