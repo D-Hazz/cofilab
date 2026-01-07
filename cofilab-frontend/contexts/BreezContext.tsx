@@ -1,3 +1,4 @@
+// /cofilab-frontend/contexts/BreezContext.tsx
 'use client'
 
 import React, {
@@ -37,6 +38,7 @@ interface BreezContextType {
   linkedAmount: number | null
   setLinkedInvoice: (invoice: string | null) => void
   clearLinkedInvoice: () => void
+  nodePubkey?: string | null         // <--- ajouté
 }
 
 const BreezContext = createContext<BreezContextType | undefined>(undefined)
@@ -47,15 +49,16 @@ function sleep(ms: number) {
 
 export const BreezProvider = ({ children }: { children: ReactNode }) => {
   const [isConnected, setIsConnected] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [attempt, setAttempt] = useState(0)
   const [balance, setBalance] = useState<Balance>({ sats: 0, fiat: 0 })
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const initializingRef = useRef(false)
-  const maxRetries = 3
-  const baseDelayMs = 500
+  const maxRetries = 5
+  const baseDelayMs = 800
 
+  // linked invoice state
   const [linkedInvoice, setLinkedInvoiceState] = useState<string | null>(null)
   const [linkedAmount, setLinkedAmount] = useState<number | null>(null)
 
@@ -85,7 +88,9 @@ export const BreezProvider = ({ children }: { children: ReactNode }) => {
   const clearLinkedInvoice = () => setLinkedInvoice(null)
 
   async function loadWalletData(sdk: any) {
+    // getInfo -> GetInfoResponse
     const info = await sdk.getInfo()
+    // compat avec ton ancien modèle Balance
     const walletInfo = info.walletInfo
     setBalance({
       sats:
@@ -96,14 +101,14 @@ export const BreezProvider = ({ children }: { children: ReactNode }) => {
       fiat: 0,
     })
 
+    // listPayments – toujours passer un objet ListPaymentsRequest
     const txs = await sdk.listPayments({})
 
     setTransactions(
       (txs || []).map((tx: any) => ({
         id: tx.id,
         amount: Math.abs(tx.amountSat ?? tx.amountSats ?? tx.amount ?? 0),
-        description:
-          tx.details?.description || tx.comment || tx.description || '',
+        description: tx.details?.description || tx.comment || tx.description || '',
         timestamp: tx.timestamp,
       })),
     )
@@ -111,8 +116,6 @@ export const BreezProvider = ({ children }: { children: ReactNode }) => {
 
   const initSdkWithRetry = async () => {
     if (initializingRef.current) return
-    if (!isBreezInitialized()) return // rien à faire si pas encore connecté par mnemonic
-
     initializingRef.current = true
     setLoading(true)
     setError(null)
@@ -121,6 +124,8 @@ export const BreezProvider = ({ children }: { children: ReactNode }) => {
       setAttempt(i + 1)
       try {
         const sdk = await getBreezSdk()
+        if (!sdk) throw new Error('Breez SDK non retourné')
+
         await loadWalletData(sdk)
 
         setIsConnected(true)
@@ -149,7 +154,6 @@ export const BreezProvider = ({ children }: { children: ReactNode }) => {
   }
 
   useEffect(() => {
-    // au mount, on tente de charger seulement si un SDK existe déjà (ex: après reload)
     initSdkWithRetry()
   }, [])
 
@@ -158,11 +162,10 @@ export const BreezProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       const sdk = await getBreezSdk()
+      if (!sdk) return
       await loadWalletData(sdk)
-      setIsConnected(true)
     } catch (err) {
       console.error('Breez refreshData error:', err)
-      setIsConnected(false)
       throw err
     }
   }
@@ -172,12 +175,18 @@ export const BreezProvider = ({ children }: { children: ReactNode }) => {
     if (!sdk) throw new Error('Breez SDK non initialisé.')
 
     try {
+      // 1) Préparer l’envoi (PrepareSendRequest)
       const prepare = await sdk.prepareSendPayment({
         destination: invoice,
+        // amount optionnel pour les invoices amountless
+        // amount: { type: 'bitcoin', receiverAmountSat: 1234 },
       })
 
+      // 2) Payer (SendPaymentRequest)
       await sdk.sendPayment({
         prepareResponse: prepare,
+        // useAssetFees?: boolean
+        // payerNote?: string
       })
 
       await refreshData()
@@ -192,6 +201,7 @@ export const BreezProvider = ({ children }: { children: ReactNode }) => {
     if (!sdk) throw new Error('Breez SDK non initialisé.')
 
     try {
+      // 1) Préparer la réception (PrepareReceiveRequest)
       const prepare = await sdk.prepareReceivePayment({
         paymentMethod: 'lightning',
         amount:
@@ -200,8 +210,12 @@ export const BreezProvider = ({ children }: { children: ReactNode }) => {
             : undefined,
       })
 
+      // 2) Créer l’invoice (ReceivePaymentRequest)
       const res = await sdk.receivePayment({
         prepareResponse: prepare,
+        // description?: string
+        // useDescriptionHash?: boolean
+        // payerNote?: string
       })
 
       await refreshData()

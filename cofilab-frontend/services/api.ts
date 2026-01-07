@@ -1,3 +1,4 @@
+// /cofilab-frontend/services/api.ts
 'use client'
 
 import axios, { AxiosRequestConfig } from 'axios'
@@ -70,6 +71,18 @@ interface Project {
   id: number
   name: string
   tasks: Task[]
+  description?: string
+  project_image_url?: string
+  created_at: string
+  updated_at: string
+  manager_username: string
+  manager_id?: number
+  total_budget?: number
+  used_budget?: number
+  contributors_count?: number
+  funding_wallet_address?: string
+  owner?: number | null
+  project_image?: string | null
 }
 
 interface UserProfile {
@@ -128,7 +141,7 @@ export const auth = {
 }
 
 // ======================
-// PROJECTS
+// PROJECTS ✅ CORRIGÉ
 // ======================
 export const projects = {
   async list(): Promise<Project[]> {
@@ -162,18 +175,21 @@ export const projects = {
     const payload = {
       ...data,
       project: projectId,
-      assigned_to: data.assigned_to || null,
+      assigned_to: data.assigned_to_id || null,
     }
     const res = await api.post('/tasks/', payload)
     return res.data
   },
 
-  async updateTask(taskId: number, data: any): Promise<Task> {
+  // ✅ CORRECTION CRITIQUE : ID en STRING + assigned_to_id
+  async updateTask(taskId: string, data: any): Promise<Task> {
+    console.log('📤 API updateTask:', { taskId, data })
     const payload = {
       ...data,
-      assigned_to: data.assigned_to || null,
+      assigned_to: data.assigned_to_id || null,
     }
     const res = await api.patch(`/tasks/${taskId}/`, payload)
+    console.log('📥 API updateTask response:', res.data)
     return res.data
   },
 
@@ -182,6 +198,7 @@ export const projects = {
     return res.data
   },
 }
+
 
 // ======================
 // PROFILES
@@ -254,4 +271,40 @@ export const invitations = {
   },
 }
 
+// ======================
+// TASK APPLICATIONS ✅ NOUVEAU
+// ======================
+
+export const taskApplications = {
+  async apply(taskId: number, message?: string) {
+    const res = await api.post('/task-applications/', {
+      task: taskId,
+      message: message || '',
+    })
+    return res.data
+  },
+
+  async listMine() {
+    const res = await api.get('/task-applications/')
+    return res.data
+  },
+
+  async accept(applicationId: number) {
+    const res = await api.post(`/task-applications/${applicationId}/accept/`)
+    return res.data
+  },
+
+  async reject(applicationId: number) {
+    const res = await api.post(`/task-applications/${applicationId}/reject/`)
+    return res.data
+  },
+  async listForProject(projectId: number) {
+    const res = await api.get('/task-applications/', {
+      params: { project: projectId },
+    })
+    return res.data
+  }
+
+
+}
 export default api

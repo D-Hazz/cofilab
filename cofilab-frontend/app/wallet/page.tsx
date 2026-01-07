@@ -1,3 +1,4 @@
+// /cofilab-frontend/app/wallet/page.tsx
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
@@ -5,6 +6,7 @@ import Link from 'next/link'
 import { useBreez } from '@/contexts/BreezContext'
 import QRCode from 'react-qr-code'
 import Sidebar from '@/app/_components/Sidebar'
+import { Zap } from 'lucide-react'
 
 export default function WalletPage() {
   const {
@@ -20,6 +22,7 @@ export default function WalletPage() {
     linkedAmount,
     setLinkedInvoice,
     clearLinkedInvoice,
+    nodePubkey,
   } = useBreez()
 
   const [payBolt11, setPayBolt11] = useState('')
@@ -214,6 +217,7 @@ export default function WalletPage() {
                 Voir les projets
               </Link>
             </div>
+            
           </header>
 
           {/* Alerte connexion */}
@@ -240,6 +244,7 @@ export default function WalletPage() {
           {/* Bandeau statut + solde */}
           <section className="grid gap-4 md:grid-cols-3">
             {/* Statut */}
+           
             <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
@@ -260,6 +265,7 @@ export default function WalletPage() {
                       Erreur : {error}
                     </p>
                   )}
+                  
                 </div>
                 <button
                   onClick={refreshData}
@@ -289,6 +295,14 @@ export default function WalletPage() {
                     })} $`
                   : 'Estimation fiat en attente du prix BTC.'}
               </p>
+              {nodePubkey && (
+                <p className="mt-1 text-[11px] text-slate-500 break-all">
+                  Node pubkey :{' '}
+                  <span className="font-mono">
+                    {nodePubkey ?? 'non disponible pour ce type de wallet'}
+                  </span>
+                </p>
+              )}
             </div>
 
             {/* Résumé projets / CTA */}
@@ -326,9 +340,7 @@ export default function WalletPage() {
               {/* Envoyer */}
               <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-semibold">
-                    Envoyer des fonds
-                  </h2>
+                  <h2 className="text-lg font-semibold">Envoyer des fonds</h2>
                   <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600">
                     Payer une invoice BOLT11
                   </span>
@@ -408,9 +420,7 @@ export default function WalletPage() {
             <div className="space-y-6">
               <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-semibold">
-                    Recevoir des fonds
-                  </h2>
+                  <h2 className="text-lg font-semibold">Recevoir des fonds</h2>
                   <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600">
                     Générer une invoice
                   </span>

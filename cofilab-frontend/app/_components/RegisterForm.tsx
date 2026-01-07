@@ -130,7 +130,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
                 <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full mt-6 bg-bitcoin hover:bg-bitcoin/90 text-white font-bold py-3.5 rounded-xl transition-all duration-200 shadow-md shadow-bitcoin/20 hover:shadow-lg hover:shadow-bitcoin/30 hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+                    className="w-full bg-bitcoin hover:bg-bitcoin/90 text-blue-900 border border-blue-900 font-semibold duration-200 shadow-md shadow-bitcoin/20 hover:shadow-bitcoin/30 py-3.5 rounded-xl transition-all shadow-bitcoin/20 hover:shadow-lg hover:shadow-bitcoin/30 hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
                 >
                     {isLoading ? (
                         <span className="flex items-center justify-center gap-2">

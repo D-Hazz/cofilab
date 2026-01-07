@@ -2,12 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { profiles } from '@/services/api'
-import { projects } from '@/services/api'
+import { profiles, projects } from '@/services/api'
 import Header from '@/app/_components/Header'
 import Sidebar from '@/app/_components/Sidebar'
 import InviteModal from '@/app/_components/InviteModal'
-
 import {
   Mail,
   Phone,
@@ -31,8 +29,10 @@ export default function UserProfilePage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Profil connecté ?
-  const [isMyProfile, setIsMyProfile] = useState(false)
+  // Profil connecté
+  const [meId, setMeId] = useState<number | null>(null)
+  const isMyProfile =
+    profile && meId !== null && profile.id === meId
 
   // Popup d'invitation
   const [showInviteModal, setShowInviteModal] = useState(false)
@@ -45,26 +45,32 @@ export default function UserProfilePage() {
       return
     }
 
-    const loadProfile = async () => {
+    const load = async () => {
       try {
+        // profil affiché
         const data = await profiles.retrieve(id as string)
         setProfile(data)
         setError(null)
 
-        const currentUserId = localStorage.getItem('userId')
-        setIsMyProfile(currentUserId === id)
-      } catch (err) {
+        // profil courant
+        try {
+          const me = await profiles.getMe()
+          setMeId(me.id)
+        } catch {
+          setMeId(null)
+        }
+      } catch {
         setError('Profil introuvable ou erreur de chargement.')
-        setIsMyProfile(false)
+        setProfile(null)
+        setMeId(null)
       } finally {
         setLoading(false)
       }
     }
 
-    loadProfile()
+    load()
   }, [id])
 
-  // Charger la liste des projets
   const loadProjects = async () => {
     try {
       setLoadingProjects(true)
@@ -77,11 +83,10 @@ export default function UserProfilePage() {
     }
   }
 
-  // Fonction d'invitation
   const sendInvitation = async (projectId: number) => {
+    if (!profile) return
     try {
       await projects.inviteContributor(projectId, profile.id)
-
       alert(
         `Invitation envoyée à ${profile.username} pour rejoindre le projet #${projectId}`,
       )
@@ -91,7 +96,6 @@ export default function UserProfilePage() {
     }
   }
 
-  // Gérer les URLs des images de profil
   const getProfileImageUrl = (path: string | null): string => {
     if (!path) return '/default-prof.png'
     if (path.startsWith('http://') || path.startsWith('https://')) return path
@@ -106,7 +110,8 @@ export default function UserProfilePage() {
   }
 
   const handleEditProfile = () => {
-    router.push(`/profiles/${id}/edit/`)
+    if (!profile) return
+    router.push(`/profiles/${profile.id}/edit/`)
   }
 
   if (loading) return <div className="p-6 text-gray-600">Chargement...</div>
@@ -141,7 +146,7 @@ export default function UserProfilePage() {
               </div>
 
               <div className="flex gap-3 mt-4 md:mt-0">
-                {/* Bouton Modifier mon profil */}
+                {/* Bouton Modifier mon profil : uniquement propriétaire */}
                 {isMyProfile && (
                   <Button
                     variant="outline"
@@ -153,11 +158,14 @@ export default function UserProfilePage() {
                   </Button>
                 )}
 
-                {/* Bouton Inviter à contribuer */}
+                {/* Bouton Inviter à contribuer : uniquement si ce n’est pas mon profil */}
                 {!isMyProfile && (
                   <Button
                     className="bg-[#1c2541] text-white hover:bg-[#1c2541]/80 shadow-md"
-                    onClick={() => setShowInviteModal(true)}
+                    onClick={() => {
+                      setShowInviteModal(true)
+                      void loadProjects()
+                    }}
                   >
                     <PlusCircle size={16} className="mr-2" />
                     Inviter à contribuer
@@ -169,6 +177,9 @@ export default function UserProfilePage() {
                     recipientId={profile.id}
                     recipientUsername={profile.username}
                     onClose={() => setShowInviteModal(false)}
+                    projects={projectsList}
+                    loading={loadingProjects}
+                    onInvite={sendInvitation}
                   />
                 )}
               </div>
@@ -197,7 +208,6 @@ export default function UserProfilePage() {
                   {profile.current_city || 'Localisation non spécifiée'}
                 </p>
 
-                {/* Adresse publique du wallet */}
                 <div className="mt-2">
                   <p className="text-sm font-medium text-gray-800 mb-1">
                     Adresse publique du wallet Lightning

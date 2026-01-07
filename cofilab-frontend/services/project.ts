@@ -1,4 +1,4 @@
-// src/services/projects.ts
+// /services/projects.ts
 import { api } from "@/lib/api";
 import { Project } from "@/types/project";
 

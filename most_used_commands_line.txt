@@ -46,8 +46,17 @@ remove nextjs cache
  install local tunnel for https urls
  npm install -g localtunnel
 
- en guise de mettre en place un projet ambitieux comme cofilab, il nous faut vraiment 
- un serveur puissant avec des hautes performance 
- parce que nous devons l'utiliser pour des grands projets vu qu'il va pouvoir au fu du temps gerer aussi les agences 
- Avec une multitude du personnel principalement des freelancers et les financeurs anonymes ou cognito a volonte soit le moyen de pouvoir se connecter avec son adresse 
- lightning
+
+arreter tous les serveur et servive
+# powershell
+PS C:\WINDOWS\system32> netstat -ano | findstr :3000
+PS C:\WINDOWS\system32> wsl --shutdown
+# 
+sudo systemctl stop minio
+sudo systemctl disable minio
+sudo systemctl stop mongod
+sudo systemctl disable mongod
+sudo systemctl stop phoenixd
+sudo systemctl disable phoenixd
+sudo systemctl stop bebop
+sudo systemctl disable bebop

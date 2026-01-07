@@ -37,18 +37,19 @@ function ProjectsPageContent() {
       setError(null)
       setIsAuth(true)
     } catch (err: any) {
-      const status = err.response?.status
+      const status = err.status || err.status_code   // ⚠️ plus err.response
       if (status === 401 || status === 403) {
         setIsAuth(false)
         setError("Veuillez vous connecter pour voir tous les projets.")
       } else {
         console.error("Erreur de chargement de l'API:", err)
-        setError("Erreur de chargement des projets. Vérifiez votre connexion API.")
+        setError(err.detail || "Erreur de chargement des projets. Vérifiez votre connexion API.")
       }
     } finally {
       setLoading(false)
     }
   }, [])
+
 
   useEffect(() => {
     loadProjects()

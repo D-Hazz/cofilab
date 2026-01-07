@@ -16,7 +16,6 @@ export default function ConnectWalletPage() {
   const { refreshData } = useBreez()
   const router = useRouter()
 
-  // Charger le mnemonic depuis localStorage si présent
   useEffect(() => {
     if (typeof window === 'undefined') return
     try {
@@ -24,9 +23,10 @@ export default function ConnectWalletPage() {
       if (stored && !mnemonic) {
         setMnemonic(stored)
       }
-    } catch (e) {
+    } catch {
       console.warn('Impossible de lire le mnemonic depuis localStorage')
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleConnect = async (e: React.FormEvent) => {
@@ -35,15 +35,19 @@ export default function ConnectWalletPage() {
     setLoading(true)
     try {
       const trimmed = mnemonic.trim()
-      // On tente la connexion
+      if (!trimmed) {
+        throw new Error('Mnemonic requis')
+      }
+
       await connectBreezWithMnemonic(trimmed)
       await refreshData()
-      // On persiste pour ne pas devoir retaper à chaque fois
+
       try {
         window.localStorage.setItem(LOCAL_STORAGE_KEY, trimmed)
-      } catch (e) {
+      } catch {
         console.warn('Impossible d’écrire le mnemonic dans localStorage')
       }
+
       router.push('/wallet')
     } catch (err: any) {
       console.error('Connect wallet error:', err)
@@ -57,7 +61,7 @@ export default function ConnectWalletPage() {
   const handleClearStored = () => {
     try {
       window.localStorage.removeItem(LOCAL_STORAGE_KEY)
-    } catch (e) {
+    } catch {
       console.warn('Impossible de supprimer le mnemonic dans localStorage')
     }
     setMnemonic('')
@@ -65,13 +69,10 @@ export default function ConnectWalletPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex">
-      {/* Sidebar fixe à gauche */}
       <Sidebar />
 
-      {/* Contenu principal */}
       <div className="flex-1 flex items-center justify-center px-4">
         <div className="max-w-xl w-full space-y-8 py-8">
-          {/* Logo / retour */}
           <div className="flex items-center justify-between text-xs text-slate-500">
             <Link
               href="/wallet"
@@ -84,7 +85,6 @@ export default function ConnectWalletPage() {
             </span>
           </div>
 
-          {/* Carte centrale */}
           <div className="rounded-3xl border border-slate-200 bg-white px-6 py-7 shadow-xl">
             <div className="mb-5 flex flex-col gap-1">
               <h1 className="text-2xl font-semibold tracking-tight">
@@ -115,7 +115,6 @@ export default function ConnectWalletPage() {
                 </p>
               </div>
 
-              {/* Aperçu des mots */}
               {words.length > 0 && (
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3">
                   <p className="text-[11px] font-medium text-slate-600 mb-2">
@@ -166,7 +165,8 @@ export default function ConnectWalletPage() {
 
             <div className="mt-4 flex items-center justify-between text-[11px] text-slate-500">
               <span>
-                Tip : utilise un environnement privé et ne partage jamais ton mnemonic.
+                Tip : utilise un environnement privé et ne partage jamais ton
+                mnemonic.
               </span>
               <span className="text-amber-600">
                 Collaborate. Fund. Earn.
